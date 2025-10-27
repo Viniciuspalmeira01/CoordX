@@ -1,4 +1,4 @@
-O CoordX é um projeto desenvolvido em Python com foco na análise e visualização de vetores em duas e três dimensões. 
+O Orangotango é um projeto desenvolvido em Python com foco na análise e visualização de vetores em duas e três dimensões. 
 Seu principal objetivo é auxiliar estudantes e entusiastas de geometria analítica e álgebra vetorial na compreensão prática dos conceitos fundamentais relacionados a vetores.
 
 
