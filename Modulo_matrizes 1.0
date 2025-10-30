@@ -3,120 +3,143 @@
 #include <iomanip>
 #include <cmath>    
 #include <random>
+#include <numeric> // Para std::inner_product
 
 using namespace std;
 
-class Matrizes{
-    public:
-    int linhas;
-    int colunas;
-    
-
-    void determinante(int matriz, int tamanho){
-        int det = 0;
-        if (tamanho ==1){
-            det = matriz[0][0];
-        } else { if (tamanho == 2){
-            det = matriz[0][0] * matriz[1][1] - matriz[0][1] * matriz[1][0];}
-        }else if (tamanho == 3){
-            det = matriz[0][0] * (matriz[1][1] * matriz[2][2] - matriz[1][2] * matriz[2][1]) -
-                  matriz[0][1] * (matriz[1][0] * matriz[2][2] - matriz[1][2] * matriz[2][0]) +
-                  matriz[0][2] * (matriz[1][0] * matriz[2][1] - matriz[1][1] * matriz[2][0]);
-        }
-    }
-
+class Matrizes {
+public:
+    // **Corrigido:** A função agora aceita um vetor de vetores de double.
     double determinante_lap(const vector<vector<double>>& matriz) {
-    int n = matriz.size(); // ordem da matriz
+        int n = matriz.size();
 
-    // Caso base: matriz 1x1
-    if (n == 1)
-        return matriz[0][0];
+        if (n == 0) return 0.0;
+        if (n == 1) return matriz[0][0];
 
-    // Caso base: matriz 2x2
-    if (n == 2)
-        return matriz[0][0] * matriz[1][1] - matriz[0][1] * matriz[1][0];
+        if (n == 2)
+            return matriz[0][0] * matriz[1][1] - matriz[0][1] * matriz[1][0];
 
-    double det = 0.0;
+        double det = 0.0;
 
-    // Expansão pela primeira linha (linha 0)
-    for (int j = 0; j < n; j++) {
-        // Criar a matriz menor (removendo linha 0 e coluna j)
-        vector<vector<double>> menor(n - 1, vector<double>(n - 1));
-        for (int i = 1; i < n; i++) {
-            int col_menor = 0;
-            for (int k = 0; k < n; k++) {
-                if (k == j) continue; // pula a coluna j
-                menor[i - 1][col_menor] = matriz[i][k];
-                col_menor++;
+        // Expansão pela primeira linha
+        for (int j = 0; j < n; j++) {
+            // Criar a matriz menor (submatriz)
+            vector<vector<double>> menor(n - 1, vector<double>(n - 1));
+            
+            // Preenche a submatriz
+            for (int i = 1; i < n; i++) { // Começa da linha 1
+                int col_menor = 0;
+                for (int k = 0; k < n; k++) {
+                    if (k == j) continue; // Pula a coluna j
+                    menor[i - 1][col_menor] = matriz[i][k];
+                    col_menor++;
+                }
             }
+
+            // Cálculo do cofator (inclui o sinal e o elemento matriz[0][j])
+            double cofator = ((j % 2 == 0) ? 1.0 : -1.0) * matriz[0][j];
+
+            // **Corrigido:** Chamada recursiva correta
+            det += cofator * determinante_lap(menor);
         }
 
-        // Cálculo do cofator
-        double cofator = ((j % 2 == 0) ? 1 : -1) * matriz[0][j];
-
-        // Soma com o determinante da matriz menor
-        det += cofator * determinante_Lap(menor);
+        return det;
     }
-
-    return det;
-}
 };
 
 class manipulando_Vetores {
-    public:
-    vector<int> A;
-    vector<int> B;
-    int tamanho = 3; //tamanho padrao
+public:
+    // **Corrigido:** O tipo dos vetores é 'const vector<int>&' para evitar cópias desnecessárias.
+    void ortogonalidade(const vector<int>& A, const vector<int>& B) {
+        // Verifica se os tamanhos são iguais (um bom hábito)
+        if (A.size() != B.size() || A.empty()) {
+            cout << "Erro: Vetores com tamanhos diferentes ou vazios." << endl;
+            return;
+        }
 
-    void ortogonalidade(int tamanho , vector<int> A, vector<int> B){
-        int produto = 0;
-        for(int i =0; i<tamanho;i++){
-            produto += A[i] * B[i] ;
+        // std::inner_product calcula o produto escalar (dot product)
+        int produto = std::inner_product(A.begin(), A.end(), B.begin(), 0);
+
+        cout << "Produto Escalar (Dot Product): " << produto << endl;
+        if (produto == 0) {
+            cout << "Os vetores sao ortogonais." << endl;
+        } else {
+            cout << "Os vetores nao sao ortogonais." << endl;
         }
-        if (produto == 0){
-            cout << "Os vetores sao ortogonais" << endl;
-        }else{
-            cout << "Os vetores nao sao ortogonais" << endl;
+    }
+
+    // **Corrigido:** Implementa o Produto Misto (que é o determinante)
+    void Produto_misto(const vector<int>& A, const vector<int>& B, const vector<int>& C) {
+        // O produto misto só é definido para 3 vetores 3D.
+        if (A.size() != 3 || B.size() != 3 || C.size() != 3) {
+            cout << "Erro: O Produto Misto requer 3 vetores de tamanho 3." << endl;
+            return;
         }
+
+        // Constrói a matriz 3x3 para o cálculo do determinante
+        vector<vector<double>> matriz_mista = {
+            {(double)A[0], (double)A[1], (double)A[2]},
+            {(double)B[0], (double)B[1], (double)B[2]},
+            {(double)C[0], (double)C[1], (double)C[2]}
+        };
+
+        Matrizes calc;
+        // Chama a função de determinante (já corrigida e esperando double)
+        double det = calc.determinante_lap(matriz_mista); 
+        
+        cout << "Volume do Paralelepípedo (Produto Misto): " << det << endl;
     }
-    void Produto_misto(vector<int> A, vector<int> B, vector<int> C){
-    const int tamanho = 3;
-    vector<int> resultado(tamanho);
-    for (int i = 0; i < tamanho; i++) {
-        resultado[i] = A[i] * B[i] + C[i];
-    }
-    cout << "Resultado do produto misto: ";
-    for (int i = 0; i < tamanho; i++) {
-        cout << resultado[i] << " ";
-    }
-    cout << endl;
-}
 };
 
-int main(){
-    const int tamanho = 3;
-    std::vector<int> B{1, 2, 3};
+int main() {
+    // A constante de tamanho é 3
+    const int tamanho = 3; 
+
+    // Vetores de exemplo
     std::vector<int> A{4, 5, 6};   
-    std::vector<int> C{1, 1, 1}
+    std::vector<int> B{1, 2, 3};
+    std::vector<int> C{1, 1, 1};
 
-    int linhas = colunas = 3;
-    int matriz[linhas][colunas];
+    // --- Parte da Matriz ---
+    
+    // **Corrigido:** Declaração da matriz usando o tipo que a função `determinante_lap` espera
+    vector<vector<double>> matriz_quadrada(tamanho, vector<double>(tamanho));
+    
+    // Inicialização do gerador de números aleatórios
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> distrib(0, 9); // de 0 a 9
 
-    Vetor = manipulando_Vetores();
-    //gerando uma matriz 3x3
-    for (int i = 0; i<tamanho; j++){
-        for (int j = 0; j<tamanho; j++){
-            matriz[i][j] = rand() % 10; // numeros aleatorios de 0 a 9
+    // **Corrigido:** Loops aninhados
+    for (int i = 0; i < tamanho; i++) {
+        for (int j = 0; j < tamanho; j++) { // **Corrigido:** j++
+            matriz_quadrada[i][j] = distrib(gen); // Método C++ moderno para aleatoriedade
         }
     }
-    for (l = 0 ; l<linhas; l++){
-        for (c = 0; c<colunas; c++){
-            cout << matriz[l][c] << " ";
+    
+    cout << "--- Matriz 3x3 Gerada ---" << endl;
+    // **Corrigido:** Loops de impressão declarando l e c
+    for (int l = 0; l < tamanho; l++) { 
+        for (int c = 0; c < tamanho; c++) {
+            cout << matriz_quadrada[l][c] << " ";
         }
         cout << endl;
     }
-    //calculando o produto misto e verificando se é dois vetores são ortogonais.
-    Vetor.ortogonalidade(tamanho, A, B);
-    Vetor.Produto_misto(A, B, C);
 
+    Matrizes calc_matriz;
+    double det_final = calc_matriz.determinante_lap(matriz_quadrada);
+    cout << "Determinante (Método de Laplace): " << det_final << endl;
+
+    cout << "\n--- Operações com Vetores ---" << endl;
+    
+    // **Corrigido:** Declaração da variável `Vetor`
+    manipulando_Vetores Vetor;
+    
+    // calculando o produto escalar e verificando ortogonalidade.
+    Vetor.ortogonalidade(A, B); 
+    
+    // calculando o produto misto (volume)
+    Vetor.Produto_misto(A, B, C);
+    
+    return 0;
 }
